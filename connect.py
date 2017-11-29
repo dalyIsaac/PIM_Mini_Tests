@@ -2,11 +2,10 @@
 Connect to the device
 """
 
-import sys
 import getpass
 import traceback
 import socket
-import select
+import time
 import paramiko
 from paramiko import SSHException, AuthenticationException, BadHostKeyException, SSHClient
 from scp import SCPClient
@@ -22,7 +21,7 @@ class Connection(SSHClient):
         Sets the location of the log file and initiates the SSHClient
         """
         paramiko.util.log_to_file("connection.log")
-        super().__init__(self)
+        super().__init__()
         self.load_system_host_keys()
         self.set_missing_host_key_policy(paramiko.WarningPolicy())
         self.shell = None
@@ -47,7 +46,7 @@ class Connection(SSHClient):
                                  gss_kex=do_gss_api_key_exchange)
                 except AuthenticationException:
                     password = getpass.getpass(
-                        f"Password for {username}@{hostname}: ")
+                        "Password for {}@{}: ".format(username, hostname))
                     self.connect(hostname, port, username, password)
                 except BadHostKeyException as ex:
                     print("Device's host key could not be verified")
@@ -85,25 +84,32 @@ class Connection(SSHClient):
             print("*** Caught exception: %s: %s" % (ex.__class__, ex))
             print("Most likely related to closing the connection.")
         print("END OF PROGRAM")
-        sys.exit(1)
 
-    def transmit_text(self, data):
+    def transmit_text(self, command):
         """
         Transmit inputted text to the device to be executed as a command
 
-        : ``data``: - ``str`` - the command to be sent to the device
+        : ``command``: - ``str`` - the command to be sent to the device
         """
-        _stdin, stdout, _stderr = self.exec_command(data)  # send the command
+        transport = self.get_transport()
+        chan = transport.open_session()
+        chan.exec_command(command)
 
-        while not stdout.channel.exit_status_read():  # wait for the command to terminate
-            if stdout.channel.recv_ready():
-                # Only print data if there is data to read in the channel
-                rlist, _wlist, _xlist = select.select(
-                    [stdout.channel], [], [], 0.0)
-                # xlist: exceptional condition
-                if rlist:  # len(rl) > 0
-                    # print data from stdout
-                    print(stdout.channel.recv(1024))
+        buff_size = 1024
+        stdout = []
+        while not chan.exit_status_ready():
+            time.sleep(1)
+            if chan.recv_ready():
+                stdout.append(chan.recv(buff_size))
+
+        # Need to gobble up any remaining output after program terminates...
+        while chan.recv_ready():
+            stdout.append(chan.recv(buff_size))        
+        stdout = "\n".join([x.decode() for x in stdout])
+        stdout = stdout.split("\n")
+        stdout.pop()
+
+        return stdout
 
     def transmit_object(self, name, target_location, is_folder=False):
         """
@@ -132,26 +138,31 @@ class Connection(SSHClient):
 
         hostname = input("Hostname: ")
         if not hostname:  # equivalent to len(hostname) == 0
+            print("--- ERROR ---")
             print("--- Hostname required ---")
-            print("END OF PROGRAM")
-            sys.exit(1)
+            print("--- END OF PROGRAM ---")
+            return None
 
         try:
             if hostname.find(":") >= 0:  # -1 if not found, index if found
-                hostname, portstr = hostname.split(":")
+                hostname, portstr = hostname.split(
+                    ":")  # resetting port number
                 port = int(portstr)
         except ValueError:
-            print("Hostname can have a maximum of two colons.")
-            print("END OF PROGRAM")
-            sys.exit(1)
+            print("--- ERROR ---")
+            print("--- Hostname can have a maximum of two colons. ---")
+            print("--- END OF PROGRAM ---")
+            return None
 
         username = input("Username: ")
         if not username:  # equivalent to len(username) == 0
-            print("You did not input a username.")
-            print("END OF PROGRAM")
-            sys.exit(1)
+            print("--- ERROR ---")
+            print("--- You did not input a username. ---")
+            print("--- END OF PROGRAM ---")
+            return None
 
         if not use_gss_api and not do_gss_api_key_exchange:
-            password = getpass.getpass(f"Password for {username}@{hostname}: ")
+            password = getpass.getpass(
+                "Password for {}@{}: ".format(username, hostname))
 
         return hostname, port, username, password

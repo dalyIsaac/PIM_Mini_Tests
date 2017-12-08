@@ -1,5 +1,5 @@
 """
-This tests the EEPROM component attached to a PIM Mini, using the I2C protocol.
+This tests the EEPROM component of a PIM Mini, using the I2C protocol.
 These test cases require that a PC is attached to the SDA and SCL lines between the MPU and
 I2C components in order to use the Aardvark drivers.
 If the PC is running Linux, it is assumed that it is running a 64-bit version.
@@ -9,8 +9,11 @@ import unittest
 from array import array
 from aardvark_py import aa_find_devices_ext, aa_open, aa_configure, aa_i2c_pullup,\
     aa_target_power, aa_i2c_bitrate, aa_i2c_bus_timeout, aa_i2c_write, aa_i2c_read,\
-    AA_PORT_NOT_FREE, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH, AA_I2C_NO_FLAGS
-from aardvark_settings import PORT_NUMBER, PAGE_SIZE, NUM_PAGES, SLAVE_ADDRESS
+    AA_PORT_NOT_FREE, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH,\
+    AA_I2C_NO_FLAGS, AA_I2C_WRITE_ERROR
+from aardvark_settings import EEPROM_PORT_NUMBER as PORT_NUMBER,\
+    EEPROM_PAGE_SIZE as PAGE_SIZE, EEPROM_NUM_PAGES as NUM_PAGES,\
+    EEPROM_SLAVE_ADDRESS as SLAVE_ADDRESS
 
 
 class I2CEEPROMConnection(unittest.TestCase):
@@ -68,24 +71,33 @@ class I2CEEPROMActions(unittest.TestCase):
 
     def write_memory(self, number):
         """Writes to memory and verifies that the correct amount of data is written"""
-        number %= 256  # ensures that the number can fit inside the 16-bit page size
+        number %= 256  # ensures that the number can be represented with 8-bits, or 1-byte
         # creates a page with a space for the address
         data_out = array('B', [number for i in range(1 + PAGE_SIZE)])
         for address in range(NUM_PAGES):
             data_out[0] = address & 0xff
-            bytes_written = aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
-                                         flags=AA_I2C_NO_FLAGS, data_out=data_out)
-            self.assertEqual(bytes_written, PAGE_SIZE)
+            # I'm hoping that Aardvark will assemble the 7-bit slave address,
+            # as that's what I think the documentation says
+            result = aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
+                                  flags=AA_I2C_NO_FLAGS, data_out=data_out)
+            self.assertNotEqual(result, AA_I2C_WRITE_ERROR)
+            self.assertEqual(result, PAGE_SIZE)
 
     def read_memory(self, number):
         """Reads to memory and verifies that the data read is correct"""
         number %= 256  # ensures that the number can fit inside the 16-bit page size
         for address in range(NUM_PAGES):
+            # I'm hoping that Aardvark will assemble the 7-bit slave address,
+            # as that's what I think the documentation says
             aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
                          flags=AA_I2C_NO_FLAGS, data_out=[address & 0xff])
+            data_in = [None for _ in range(PAGE_SIZE)]
             count, data_in = aa_i2c_read(
-                self.handle, slave_addr=SLAVE_ADDRESS, flags=AA_I2C_NO_FLAGS, data_in=PAGE_SIZE)
-            # NOTE: CHECK THAT data_in=PAGE_SIZE is correct
+                # I'm hoping that Aardvark will assemble the 7-bit slave address,
+                # as that's what I think the documentation says
+                aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
+                flags=AA_I2C_NO_FLAGS, data_in=PAGE_SIZE
+            )
             expected_input = array('B', [number for i in range(1 + PAGE_SIZE)])
             self.assertEqual(expected_input, data_in)
             self.assertEqual(count, len(expected_input))

@@ -34,9 +34,9 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
     The tests are numbered to ensure that they are executed in order.
     """
 
-    def __init__(self):
+    def __init__(self, methodName='runTest'):
         """Initializer for attributes"""
-        super().__init__()
+        unittest.TestCase.__init__(self, methodName='runTest')
         self.handle = None
 
     def setUp(self):

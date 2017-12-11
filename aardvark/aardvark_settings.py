@@ -3,7 +3,7 @@
 # EEPROM Settings
 EEPROM_PORT_NUMBER = 0
 EEPROM_PAGE_SIZE = 16 # NOTE: The number is the number of bytes, per documentation
-EEPROM_PAGE_SIZE.__doc__ = "PAGE_SIZE is the number of bytes within a page."
+# PAGE_SIZE is the number of bytes within a page.
 EEPROM_NUM_PAGES = 32 # per documentation
 EEPROM_SLAVE_ADDRESS = 0
 

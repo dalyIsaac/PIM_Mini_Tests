@@ -5,14 +5,20 @@ i.e. test_transmit_text will always be executed after test_init.
 """
 
 from os import path
-import unittest
-from unittest.mock import patch
 import io
 import sys
+import imp
+import unittest
+# from unittest.mock import patch # python 3+
+from mock import patch  # python 2
 
 from connect import Connection
 
-from Tests.test_values import HOSTNAME, USERNAME, PASSWORD
+# from Tests.test_values import HOSTNAME, USERNAME, PASSWORD # python 3+
+TEST_VALUES = imp.load_source("test_values", "aardvark.py")
+HOSTNAME = TEST_VALUES.HOSTNAME
+USERNAME = TEST_VALUES.USERNAME
+PASSWORD = TEST_VALUES.PASSWORD
 
 
 class ConnectionMethods(unittest.TestCase):
@@ -87,7 +93,7 @@ class ConnectionMethods(unittest.TestCase):
         self.assertEqual(c_var.get_transport(), None)
 
     # def _alternative_test_open_close(self):
-        # """Tests that the connection can be successfully opened and closed"""    
+        # """Tests that the connection can be successfully opened and closed"""
         # send_ignore_status_success = True
         # try:
         #     transport = c_var.get_transport()

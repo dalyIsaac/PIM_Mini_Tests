@@ -64,16 +64,16 @@ class I2CEEPROMConnection(unittest.TestCase):
 class I2CEEPROMActions(unittest.TestCase):
     """Tests that the EEPROM can be written to via I2C"""
 
-    def __init__(self):
+    def __init__(self, methodName='runTest'):
         """Initializer for attributes"""
-        super().__init__()
+        unittest.TestCase.__init__(self, methodName)
         self.handle = None
 
     def write_memory(self, number):
         """Writes to memory and verifies that the correct amount of data is written"""
         number %= 256  # ensures that the number can be represented with 8-bits, or 1-byte
         # creates a page with a space for the address
-        data_out = array('B', [number for i in range(1 + PAGE_SIZE)])
+        data_out = array('B', [number for _ in range(1 + PAGE_SIZE)])
         for address in range(NUM_PAGES):
             data_out[0] = address & 0xff
             # I'm hoping that Aardvark will assemble the 7-bit slave address,
@@ -98,7 +98,7 @@ class I2CEEPROMActions(unittest.TestCase):
                 aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
                 flags=AA_I2C_NO_FLAGS, data_in=PAGE_SIZE
             )
-            expected_input = array('B', [number for i in range(1 + PAGE_SIZE)])
+            expected_input = array('B', [number for _ in range(1 + PAGE_SIZE)])
             self.assertEqual(expected_input, data_in)
             self.assertEqual(count, len(expected_input))
 
@@ -119,7 +119,9 @@ def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(I2CEEPROMConnection))
-    suite.addTest(unittest.makeSuite(I2CEEPROMActions))
+    test = unittest.makeSuite(I2CEEPROMActions)
+    suite.addTest(test)
+    # suite.addTest(unittest.makeSuite(I2CEEPROMActions))
     return suite
 
 

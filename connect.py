@@ -21,7 +21,7 @@ class Connection(SSHClient):
         Sets the location of the log file and initiates the SSHClient
         """
         paramiko.util.log_to_file("connection.log")
-        super().__init__()
+        SSHClient.__init__(self)
         self.load_system_host_keys()
         self.set_missing_host_key_policy(paramiko.WarningPolicy())
         self.shell = None

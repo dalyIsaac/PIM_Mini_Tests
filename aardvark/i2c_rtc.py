@@ -36,7 +36,7 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
 
     def __init__(self, methodName='runTest'):
         """Initializer for attributes"""
-        unittest.TestCase.__init__(self, methodName='runTest')
+        unittest.TestCase.__init__(self, methodName=methodName)
         self.handle = None
 
     def setUp(self):
@@ -86,7 +86,7 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data_out = array('B', [address & 0xff, value])
         result = aa_i2c_write(aardvark=self.handle, slave_addr=address,
                               flags=AA_I2C_NO_FLAGS, data_out=data_out)
-        self.assertNotEqual(result, AA_I2C_WRITE_ERROR)
+        self.assertGreater(result, 0)
         self.assertEqual(result, 1)
 
     def write(self, data):
@@ -119,7 +119,7 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
     def _read(self, address):
         """Reads an address and returns it"""
         aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
-                     flags=AA_I2C_NO_FLAGS, data_out=[address & 0xff])
+                     flags=AA_I2C_NO_FLAGS, data_out=array('B', [address & 0xff]))
         count, data_in = aa_i2c_read(
             aardvark=self.handle, slave_addr=address, flags=AA_I2C_NO_FLAGS, data_in=1)
         self.assertEqual(count, 1)
@@ -135,11 +135,11 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data_formatted = datetime(
             data.year,
             data.month,
-            data.day_of_week,
             data.day_of_month,
             data.hours,
             data.minutes,
             data.seconds)
+        self.assertEqual(data.day_of_week, data_formatted.weekday() + 1)
 
         self.write(data)
         time.sleep(delta.total_seconds)
@@ -147,13 +147,13 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data_in_formatted = datetime(
             data_in.year,
             data_in.month,
-            data_in.day_of_week,
             data_in.day_of_month,
             data_in.hours,
             data_in.minutes,
             data_in.seconds)
         check_data = data_formatted + delta
         self.assertEqual(check_data, data_in_formatted)
+        self.assertEqual(check_data.weekday() + 1, data_in_formatted.weekday() + 1)
 
     def tearDown(self):
         """Is executed after every test"""
@@ -166,7 +166,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=14,
             minutes=0,
             seconds=55
@@ -178,7 +179,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=14,
             minutes=0,
             seconds=10
@@ -190,7 +192,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=14,
             minutes=59,
             seconds=55
@@ -202,7 +205,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=14,
             minutes=0,
             seconds=55
@@ -214,7 +218,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=23,
             minutes=59,
             seconds=55
@@ -226,7 +231,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=14,
             minutes=59,
             seconds=55
@@ -238,7 +244,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=10,
-            day=31,
+            day_of_month=31,
+            day_of_week=2,
             hours=23,
             minutes=59,
             seconds=55
@@ -250,7 +257,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=9,
-            day=30,
+            day_of_month=30,
+            day_of_week=6,
             hours=23,
             minutes=59,
             seconds=55
@@ -264,7 +272,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=2,
-            day=28,
+            day_of_month=28,
+            day_of_week=2,
             hours=23,
             minutes=59,
             seconds=55
@@ -276,7 +285,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2004,
             month=2,
-            day=28,
+            day_of_month=28,
+            day_of_week=6,
             hours=23,
             minutes=59,
             seconds=55
@@ -291,7 +301,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2100,
             month=2,
-            day=28,
+            day_of_month=28,
+            day_of_week=7,
             hours=23,
             minutes=59,
             seconds=55
@@ -306,7 +317,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2000,
             month=2,
-            day=28,
+            day_of_month=28,
+            day_of_week=1,
             hours=23,
             minutes=59,
             seconds=55
@@ -318,7 +330,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=8,
+            day_of_month=8,
+            day_of_week=5,
             hours=23,
             minutes=59,
             seconds=55
@@ -330,7 +343,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=31,
+            day_of_month=31,
+            day_of_week=7,
             hours=23,
             minutes=59,
             seconds=55
@@ -342,7 +356,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=8,
-            day=31,
+            day_of_month=31,
+            day_of_week=4,
             hours=23,
             minutes=59,
             seconds=55
@@ -354,7 +369,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2099,
             month=12,
-            day=31,
+            day_of_month=31,
+            day_of_week=4,
             hours=23,
             minutes=0,
             seconds=55
@@ -366,7 +382,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         data = ClockData(
             year=2017,
             month=12,
-            day=31,
+            day_of_month=31,
+            day_of_week=7,
             hours=23,
             minutes=0,
             seconds=55

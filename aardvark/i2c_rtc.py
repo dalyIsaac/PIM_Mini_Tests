@@ -11,11 +11,10 @@ from datetime import datetime, timedelta
 from collections import namedtuple
 from aardvark_py import aa_open, aa_configure, aa_i2c_pullup, aa_target_power, aa_i2c_bitrate,\
     aa_i2c_bus_timeout, aa_close, aa_i2c_write, aa_i2c_read, AA_CONFIG_GPIO_I2C,\
-    AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH, AA_UNABLE_TO_CLOSE, AA_I2C_WRITE_ERROR,\
-    AA_I2C_NO_FLAGS, array
+    AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH, AA_UNABLE_TO_CLOSE, AA_I2C_NO_FLAGS, array
 from aardvark_settings import RTC_PORT_NUMBER as PORT_NUMBER, RTC_SLAVE_ADDRESS as SLAVE_ADDRESS,\
     SECONDS_ADDRESS, MINUTE_ADDRESS, HOUR_ADDRESS, DAY_OF_WEEK_ADDRESS, DAY_OF_MONTH_ADDRESS,\
-    MONTH_ADDRESS, YEAR_ADDRESS
+    MONTH_ADDRESS, YEAR_ADDRESS, TIME_PERIOD
 
 ClockData = namedtuple("ClockData", [
     "year",
@@ -125,13 +124,14 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         self.assertEqual(count, 1)
         return data_in[0]
 
-    def check(self, data):
+    def check(self, data, time_period=10):
         """
         Checks that the clock can accurately keep the time.  
         : `data` : - The data which will be initially written to the RTC  
-        : `delta` : - The time delta after which the RTC will be checked
+        : `time_period` : - The time delta (seconds) after which the RTC will be checked.
+        default - `10`
         """
-        delta = timedelta(seconds=10)
+        delta = timedelta(seconds=time_period)
         data_formatted = datetime(
             data.year,
             data.month,
@@ -153,7 +153,7 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
             data_in.seconds)
         check_data = data_formatted + delta
         self.assertEqual(check_data, data_in_formatted)
-        self.assertEqual(check_data.weekday() + 1, data_in_formatted.weekday() + 1)
+        self.assertEqual(check_data.weekday() + 1, data_in.day_of_week)
 
     def tearDown(self):
         """Is executed after every test"""
@@ -390,6 +390,18 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
         )
         self.check(data)
 
+    def test_18_period(self):
+        """Checks that the RTC is accurate over the specified time period"""
+        data = ClockData(
+            year=2000,
+            month=1,
+            day_of_month=1,
+            day_of_week=1,
+            hours=0,
+            minutes=0,
+            seconds=0
+        )
+        self.check(data, TIME_PERIOD)
 def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()

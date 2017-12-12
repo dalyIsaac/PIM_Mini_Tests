@@ -9,8 +9,8 @@ import unittest
 from array import array
 from aardvark_py import aa_find_devices_ext, aa_open, aa_configure, aa_i2c_pullup,\
     aa_target_power, aa_i2c_bitrate, aa_i2c_bus_timeout, aa_i2c_write, aa_i2c_read,\
-    AA_PORT_NOT_FREE, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH,\
-    AA_I2C_NO_FLAGS, AA_I2C_WRITE_ERROR
+    aa_close, AA_PORT_NOT_FREE, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH,\
+    AA_TARGET_POWER_BOTH, AA_I2C_NO_FLAGS
 from aardvark_settings import EEPROM_PORT_NUMBER as PORT_NUMBER,\
     EEPROM_PAGE_SIZE as PAGE_SIZE, EEPROM_NUM_PAGES as NUM_PAGES,\
     EEPROM_SLAVE_ADDRESS as SLAVE_ADDRESS
@@ -19,7 +19,7 @@ from aardvark_settings import EEPROM_PORT_NUMBER as PORT_NUMBER,\
 class I2CEEPROMConnection(unittest.TestCase):
     """Tests that the connection of the EEPROM can be configured via I2C"""
 
-    def test_port_ready(self):
+    def test_01_port_ready(self):
         """Tests that PORT_NUMBER is connected and available"""
         num, ports, unique_ids = aa_find_devices_ext(16, 16)
 
@@ -43,10 +43,10 @@ class I2CEEPROMConnection(unittest.TestCase):
             return port, True
         return port, False
 
-    def test_open_close(self):
+    def test_02_open_close(self):
         """Tests that the port can be successfully opened and closed"""
         handle = aa_open(PORT_NUMBER)
-        self.assertLessEqual(handle, 0)  # check that the port is open
+        self.assertGreaterEqual(handle, 0)  # check that the port is open
         handle_config = aa_configure(handle, AA_CONFIG_GPIO_I2C)
         self.assertEqual(handle_config, AA_CONFIG_GPIO_I2C)
         i2c_pullup_resistors = aa_i2c_pullup(handle, AA_I2C_PULLUP_BOTH)
@@ -57,8 +57,10 @@ class I2CEEPROMConnection(unittest.TestCase):
         self.assertEqual(bitrate, 400)
         bus_time_out = aa_i2c_bus_timeout(handle, 10)  # timeout = 10ms
         self.assertEqual(bus_time_out, 10)
-        _, status = self.get_status(PORT_NUMBER)
+        _, status = I2CEEPROMConnection.get_status(PORT_NUMBER)
         self.assertEqual(status, False)
+        num_closed = aa_close(handle)
+        self.assertEqual(num_closed, 1)
 
 
 class I2CEEPROMActions(unittest.TestCase):
@@ -80,8 +82,8 @@ class I2CEEPROMActions(unittest.TestCase):
             # as that's what I think the documentation says
             result = aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
                                   flags=AA_I2C_NO_FLAGS, data_out=data_out)
-            self.assertNotEqual(result, AA_I2C_WRITE_ERROR)
-            self.assertEqual(result, PAGE_SIZE)
+            self.assertGreater(result, 0)
+            self.assertEqual(result, PAGE_SIZE + 1)
 
     def read_memory(self, number):
         """Reads to memory and verifies that the data read is correct"""
@@ -90,21 +92,21 @@ class I2CEEPROMActions(unittest.TestCase):
             # I'm hoping that Aardvark will assemble the 7-bit slave address,
             # as that's what I think the documentation says
             aa_i2c_write(aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
-                         flags=AA_I2C_NO_FLAGS, data_out=[address & 0xff])
-            data_in = [None for _ in range(PAGE_SIZE)]
+                         flags=AA_I2C_NO_FLAGS, data_out=array('B', [address & 0xff]))
             count, data_in = aa_i2c_read(
                 # I'm hoping that Aardvark will assemble the 7-bit slave address,
                 # as that's what I think the documentation says
                 aardvark=self.handle, slave_addr=SLAVE_ADDRESS,
                 flags=AA_I2C_NO_FLAGS, data_in=PAGE_SIZE
             )
-            expected_input = array('B', [number for _ in range(1 + PAGE_SIZE)])
+            expected_input = array('B', [number for _ in range(PAGE_SIZE)])
             self.assertEqual(expected_input, data_in)
             self.assertEqual(count, len(expected_input))
 
     def test_write_read_memory(self):
         """Configures the connection and checks the write and read functionality"""
         self.handle = aa_open(PORT_NUMBER)
+        self.assertGreaterEqual(self.handle, 0)
         aa_configure(self.handle, AA_CONFIG_GPIO_I2C)
         aa_i2c_pullup(self.handle, AA_I2C_PULLUP_BOTH)
         aa_target_power(self.handle, AA_TARGET_POWER_BOTH)
@@ -119,9 +121,7 @@ def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(I2CEEPROMConnection))
-    test = unittest.makeSuite(I2CEEPROMActions)
-    suite.addTest(test)
-    # suite.addTest(unittest.makeSuite(I2CEEPROMActions))
+    suite.addTest(unittest.makeSuite(I2CEEPROMActions))
     return suite
 
 

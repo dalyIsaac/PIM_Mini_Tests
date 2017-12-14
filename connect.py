@@ -104,7 +104,7 @@ class Connection(SSHClient):
 
         # Need to gobble up any remaining output after program terminates...
         while chan.recv_ready():
-            stdout.append(chan.recv(buff_size))        
+            stdout.append(chan.recv(buff_size))
         stdout = "\n".join([x.decode() for x in stdout])
         stdout = stdout.split("\n")
         stdout.pop()

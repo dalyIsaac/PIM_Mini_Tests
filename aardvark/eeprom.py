@@ -7,63 +7,42 @@ If the PC is running Linux, it is assumed that it is running a 64-bit version.
 
 import unittest
 from array import array
-from aardvark_py import aa_find_devices_ext, aa_open, aa_configure, aa_i2c_pullup,\
-    aa_target_power, aa_i2c_bitrate, aa_i2c_bus_timeout, aa_i2c_write, aa_i2c_read,\
-    aa_close, AA_PORT_NOT_FREE, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH,\
-    AA_TARGET_POWER_BOTH, AA_I2C_NO_FLAGS
+from aardvark_py import aa_open, aa_configure, aa_i2c_pullup,\
+    aa_target_power, aa_i2c_bitrate, aa_i2c_bus_timeout, aa_i2c_write,\
+    aa_i2c_read, aa_close, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH,\
+    AA_TARGET_POWER_BOTH, AA_I2C_NO_FLAGS, AA_UNABLE_TO_CLOSE
 from aardvark_settings import EEPROM_PORT_NUMBER as PORT_NUMBER,\
     EEPROM_PAGE_SIZE as PAGE_SIZE, EEPROM_NUM_PAGES as NUM_PAGES,\
-    EEPROM_SLAVE_ADDRESS as SLAVE_ADDRESS
+    EEPROM_SLAVE_ADDRESS as SLAVE_ADDRESS, EEPROM_BITRATE as BITRATE
+from aardvark_connection import AardvarkConnection
 
 
-class I2CEEPROMConnection(unittest.TestCase):
+class EEPROMConnection(AardvarkConnection):
     """Tests that the connection of the EEPROM can be configured via I2C"""
 
-    def test_01_port_ready(self):
-        """Tests that PORT_NUMBER is connected and available"""
-        num, ports, unique_ids = aa_find_devices_ext(16, 16)
-
-        self.assertGreater(num, 0)  # check that devices have been returned
-        if num > 0:
-            # dictionary of form = port : (unique_id, in_use_status)
-            devices = {}
-            for i in range(num):
-                port, in_use_status = I2CEEPROMConnection.get_status(ports[i])
-                devices[port] = unique_ids, in_use_status
-            # checks that the port is detected
-            self.assertEqual(PORT_NUMBER in devices.keys(), True)
-            # checks that it's available
-            self.assertEqual(devices[PORT_NUMBER][1], False)
-
     @staticmethod
-    def get_status(port):
-        """Returns the status of the port and the port number"""
-        if port & AA_PORT_NOT_FREE:
-            port = port & ~AA_PORT_NOT_FREE
-            return port, True
-        return port, False
+    def get_port_number():
+        """Returns the port number"""
+        return PORT_NUMBER
 
-    def test_02_open_close(self):
+    def configure(self):
         """Tests that the port can be successfully opened and closed"""
-        handle = aa_open(PORT_NUMBER)
-        self.assertGreaterEqual(handle, 0)  # check that the port is open
-        handle_config = aa_configure(handle, AA_CONFIG_GPIO_I2C)
+        handle_config = aa_configure(self.handle, AA_CONFIG_GPIO_I2C)
         self.assertEqual(handle_config, AA_CONFIG_GPIO_I2C)
-        i2c_pullup_resistors = aa_i2c_pullup(handle, AA_I2C_PULLUP_BOTH)
+        i2c_pullup_resistors = aa_i2c_pullup(self.handle, AA_I2C_PULLUP_BOTH)
         self.assertEqual(i2c_pullup_resistors, AA_I2C_PULLUP_BOTH)
-        power_status = aa_target_power(handle, AA_TARGET_POWER_BOTH)
+        power_status = aa_target_power(self.handle, AA_TARGET_POWER_BOTH)
         self.assertEqual(power_status, AA_TARGET_POWER_BOTH)
-        bitrate = aa_i2c_bitrate(handle, 400)  # bitrate = 400
-        self.assertEqual(bitrate, 400)
-        bus_time_out = aa_i2c_bus_timeout(handle, 10)  # timeout = 10ms
+        bitrate = aa_i2c_bitrate(self.handle, BITRATE)  # bitrate = 400
+        self.assertEqual(bitrate, BITRATE)
+        bus_time_out = aa_i2c_bus_timeout(self.handle, 10)  # timeout = 10ms
         self.assertEqual(bus_time_out, 10)
-        _, status = I2CEEPROMConnection.get_status(PORT_NUMBER)
-        self.assertEqual(status, False)
-        num_closed = aa_close(handle)
-        self.assertEqual(num_closed, 1)
 
 
-class I2CEEPROMActions(unittest.TestCase):
+AardvarkConnection.register(EEPROMConnection)
+
+
+class EEPROMActions(unittest.TestCase):
     """Tests that the EEPROM can be written to via I2C"""
 
     def __init__(self, methodName='runTest'):
@@ -110,18 +89,21 @@ class I2CEEPROMActions(unittest.TestCase):
         aa_configure(self.handle, AA_CONFIG_GPIO_I2C)
         aa_i2c_pullup(self.handle, AA_I2C_PULLUP_BOTH)
         aa_target_power(self.handle, AA_TARGET_POWER_BOTH)
-        aa_i2c_bitrate(self.handle, 400)  # bitrate = 400
+        aa_i2c_bitrate(self.handle, BITRATE)
         aa_i2c_bus_timeout(self.handle, 10)  # timeout = 10ms
-        for i in range(0, 16, 2):
+        for i in range(0, 18, 2):
             self.write_memory(i)
             self.read_memory(i)
+        if aa_close(self.handle) == AA_UNABLE_TO_CLOSE:
+            raise Exception("The handle failed to close")
+        self.handle = None
 
 
 def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(I2CEEPROMConnection))
-    suite.addTest(unittest.makeSuite(I2CEEPROMActions))
+    suite.addTest(unittest.makeSuite(EEPROMConnection))
+    suite.addTest(unittest.makeSuite(EEPROMActions))
     return suite
 
 

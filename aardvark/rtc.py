@@ -101,7 +101,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
 
     def read(self):
         """Reads data from the RTC and converts it back into the correct format"""
-        reg_month = self._read(MONTH_ADDRESS) # this is going to be used twice, so keep it
+        reg_month = self._read(
+            MONTH_ADDRESS)  # this is going to be used twice, so keep it
         data_in = ClockData(
             year=I2CRTC.b16tob10(self._read(YEAR_ADDRESS)) + 100,
             month=I2CRTC.b16tob10(reg_month & 0x1f),
@@ -402,6 +403,8 @@ class I2CRTC(unittest.TestCase):  # pylint: disable=R0904
             seconds=0
         )
         self.check(data, TIME_PERIOD)
+
+
 def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()

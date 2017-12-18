@@ -7,18 +7,21 @@ i.e. test_transmit_text will always be executed after test_init.
 from os import path
 import io
 import sys
-import imp
 import unittest
-# from unittest.mock import patch # python 3+
-from mock import patch  # python 2
 
-from connect import Connection
-
-# from Tests.test_values import HOSTNAME, USERNAME, PASSWORD # python 3+
-TEST_VALUES = imp.load_source("test_values", "aardvark.py")
-HOSTNAME = TEST_VALUES.HOSTNAME
-USERNAME = TEST_VALUES.USERNAME
-PASSWORD = TEST_VALUES.PASSWORD
+# Ensure that this is running in Python 3.5+
+if sys.version_info.major < 3 or sys.version_info.minor < 5:
+    raise Exception(
+        "Please use Python 3.5 or greater.\nYou are currently using Python {}.{}.{}"
+        .format(
+            sys.version_info.major,
+            sys.version_info.minor,
+            sys.version_info.micro
+        ))
+else:
+    from unittest.mock import patch  # python 3+
+    from Tests.test_values import HOSTNAME, USERNAME, PASSWORD  # python 3+
+    from connect import Connection
 
 
 class ConnectionMethods(unittest.TestCase):

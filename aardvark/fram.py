@@ -39,7 +39,7 @@ class FRAMConnection(AardvarkConnection):
 AardvarkConnection.register(FRAMConnection)
 
 
-class FRAMACTIONS(unittest.TestCase):
+class FRAMActions(unittest.TestCase):
     """Tests that the EEPROM can be written to via I2C"""
 
     def __init__(self, methodName='runTest'):
@@ -138,3 +138,20 @@ class FRAMACTIONS(unittest.TestCase):
         for i in range(1, 17, 2):
             self.write(i, INITIAL_ADDRESS, NUM_ADDRESS)
             self.read(i, INITIAL_ADDRESS, NUM_ADDRESS)
+
+def construct_test_suite():
+    """Constructs the test suite"""
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(FRAMConnection))
+    suite.addTest(unittest.makeSuite(FRAMActions))
+    return suite
+
+
+def main():
+    """Runs the test suite"""
+    test_runner = unittest.TextTestRunner(verbosity=2)
+    test_runner.run(construct_test_suite())
+
+
+if __name__ == '__main__':
+    main()

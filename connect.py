@@ -2,6 +2,7 @@
 Connect to the device
 """
 
+import sys
 import getpass
 import traceback
 import socket
@@ -20,6 +21,14 @@ class Connection(SSHClient):
         """
         Sets the location of the log file and initiates the SSHClient
         """
+        if sys.version_info.major < 3 or sys.version_info.minor < 5:
+            raise Exception(
+                "Please use Python 3.5 or greater.\nYou are currently using Python {}.{}.{}"
+                .format(
+                    sys.version_info.major,
+                    sys.version_info.minor,
+                    sys.version_info.micro
+                ))
         paramiko.util.log_to_file("connection.log")
         SSHClient.__init__(self)
         self.load_system_host_keys()

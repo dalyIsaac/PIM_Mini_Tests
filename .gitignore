@@ -9,3 +9,4 @@ node_modules
 __pycache__
 **/.mypy_cache/**
 .vscode
+connection.log

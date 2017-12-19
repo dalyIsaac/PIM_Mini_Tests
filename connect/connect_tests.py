@@ -4,10 +4,7 @@ Methods in Python are stored in a dictionary, which is ordered alphabetically in
 i.e. test_transmit_text will always be executed after test_init.
 """
 
-from os import path
-import io
 import sys
-import unittest
 
 # Ensure that this is running in Python 3.5+
 if sys.version_info.major < 3 or sys.version_info.minor < 5:
@@ -19,8 +16,11 @@ if sys.version_info.major < 3 or sys.version_info.minor < 5:
             sys.version_info.micro
         ))
 else:
+    import unittest
     from unittest.mock import patch  # python 3+
-    from Tests.test_values import HOSTNAME, USERNAME, PASSWORD  # python 3+
+    from os import path
+    import io
+    from connect_tests_settings import HOSTNAME, USERNAME, PASSWORD  # python 3+
     from connect import Connection
 
 

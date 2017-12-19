@@ -12,9 +12,11 @@ def main():
     if STARTUP_TESTS:
         pass
     if EEPROM_TESTS:
+        # NOTE: Runs on PC
         from aardvark_tests.eeprom import main as eeprom_main
         eeprom_main()
     if FRAM_TESTS:
+        # NOTE: Runs on PC
         from aardvark_tests.fram import main as fram_main
         fram_main()
     if ETHERNET_TESTS:
@@ -24,11 +26,13 @@ def main():
     if LEDS_TESTS:
         pass
     if RTC_TESTS:
+        # NOTE: Runs on PC
         from aardvark_tests.rtc import main as rtc_main
         rtc_main()
     if ID_MODULE_TESTS:
         pass
     if COMMS_TESTS:
+        # NOTE: Runs on the PIM Mini
         from comms_tests.comms import main as comms_main
         comms_main()
     if IO_EXTEND_COMMS_TESTS:

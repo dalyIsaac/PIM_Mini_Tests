@@ -2,7 +2,6 @@
 Connect to the device
 """
 
-import sys
 import getpass
 import traceback
 import socket
@@ -21,14 +20,6 @@ class Connection(SSHClient):
         """
         Sets the location of the log file and initiates the SSHClient
         """
-        if sys.version_info.major < 3 or sys.version_info.minor < 5:
-            raise Exception(
-                "Please use Python 3.5 or greater.\nYou are currently using Python {}.{}.{}"
-                .format(
-                    sys.version_info.major,
-                    sys.version_info.minor,
-                    sys.version_info.micro
-                ))
         paramiko.util.log_to_file("connection.log")
         SSHClient.__init__(self)
         self.load_system_host_keys()
@@ -145,7 +136,7 @@ class Connection(SSHClient):
         """
         port = 22
 
-        hostname = input("Hostname: ")
+        hostname = raw_input("Hostname: ")
         if not hostname:  # equivalent to len(hostname) == 0
             print("--- ERROR ---")
             print("--- Hostname required ---")
@@ -163,7 +154,7 @@ class Connection(SSHClient):
             print("--- END OF PROGRAM ---")
             return None
 
-        username = input("Username: ")
+        username = raw_input("Username: ")
         if not username:  # equivalent to len(username) == 0
             print("--- ERROR ---")
             print("--- You did not input a username. ---")

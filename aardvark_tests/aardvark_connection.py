@@ -20,8 +20,8 @@ class AardvarkConnection(unittest.TestCase):
         self.handle = None
         unittest.TestCase.__init__(self, methodName)
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def get_port_number():
         """Returns the port number"""
         pass

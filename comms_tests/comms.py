@@ -9,8 +9,8 @@ class SerialComms(unittest.TestCase):
     Tests the serial communications of the child class.  
     : DO NOT DIRECTLY USE THIS CLASS FOR TESTING.  ALWAYS IMPLEMENT A CHILD CLASS IN THE FORMAT: :
     `class ChildClass(SerialComms): pass`"""
-    
-    def __init__(self, methodName='runTest'):
+
+    def __init__(self, methodName="runTest"):
         self.ttl = None
         self.rs232 = None
         self.rs485 = None
@@ -36,18 +36,27 @@ class SerialComms(unittest.TestCase):
 
     def test_ttl(self):
         """Tests that data can be written and read over TTL"""
-        self._test(self.ttl)
+        self._test(self.ttl, "TTL")
 
     def test_rs232(self):
         """Tests that data can be written and read over RS-232"""
-        self._test(self.rs232)
+        self._test(self.rs232, "RS-232")
 
     def test_rs485(self):
         """Tests that data can be written and read over RS-485"""
-        self._test(self.rs485)
+        self._test(self.rs485, "RS-485")
 
-    def _test(self, comm):
+    def _test(self, comm, test_name):
         """Writes, reads, and ensures that the output is correct for the serial device"""
+        status = None
+        while status != "y" and status != "n":
+            status = raw_input(
+                "\nIs the PIM Mini ready for the {} {} test? (y/n): "
+                .format(self.__class__.__name__, test_name)
+            )
+            status = status.strip()
+        if status == "n":
+            self.fail("The user indicated that the test is not ready")
         comm.open()
         comm.write(TEST_STRING)
         output = str(comm.read_all())
@@ -63,6 +72,7 @@ class IEDComms(SerialComms):
     """IEDComms"""
     pass
 
+
 def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()
@@ -77,5 +87,5 @@ def main():
     test_runner.run(construct_test_suite())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -10,7 +10,8 @@ from settings import STARTUP_TESTS, EEPROM_TESTS, FRAM_TESTS, ETHERNET_TESTS, US
 def main():
     """Test harness"""
     if STARTUP_TESTS:
-        pass
+        from startup.startup import main as startup_main
+        startup_main()
     if EEPROM_TESTS:
         # NOTE: Runs on PC
         from aardvark_tests.eeprom import main as eeprom_main

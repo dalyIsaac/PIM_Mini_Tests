@@ -48,7 +48,7 @@ class SerialComms(unittest.TestCase):
 
     def _test(self, comm, test_name):
         """Writes, reads, and ensures that the output is correct for the serial device"""
-        status = None
+        status = ""
         while status != "y" and status != "n":
             status = raw_input("Is the PIM Mini ready for the {} {} test? (y/n): ".format(
                 self.__class__.__name__, test_name))

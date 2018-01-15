@@ -34,7 +34,7 @@ def main():
         pass
     if COMMS_TESTS:
         # NOTE: Runs on the PIM Mini
-        from comms_tests.comms import main as comms_main
+        from comms.comms import main as comms_main
         comms_main()
     if IO_EXTEND_COMMS_TESTS:
         pass

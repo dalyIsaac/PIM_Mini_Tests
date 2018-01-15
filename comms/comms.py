@@ -1,7 +1,7 @@
 """Tests the serial communications for the PIM_Mini"""
 
 import unittest
-from comms_settings import TEST_STRING
+from comms_settings import TEST_STRING  # pylint: disable=W0403
 
 
 class SerialComms(unittest.TestCase):
@@ -22,12 +22,12 @@ class SerialComms(unittest.TestCase):
         Configures the serial port
         """
         if isinstance(self, CCPComms):
-            from comms_settings import CCP_TTL, CCP_RS232, CCP_RS485
+            from comms_settings import CCP_TTL, CCP_RS232, CCP_RS485  # pylint: disable=W0403
             self.ttl = CCP_TTL
             self.rs232 = CCP_RS232
             self.rs485 = CCP_RS485
         elif isinstance(self, IEDComms):
-            from comms_settings import IED_TTL, IED_RS232, IED_RS485
+            from comms_settings import IED_TTL, IED_RS232, IED_RS485  # pylint: disable=W0403
             self.ttl = IED_TTL
             self.rs232 = IED_RS232
             self.rs485 = IED_RS485
@@ -49,11 +49,12 @@ class SerialComms(unittest.TestCase):
     def _test(self, comm, test_name):
         """Writes, reads, and ensures that the output is correct for the serial device"""
         status = None
+        message = "While the test is running please check that the {} LED is on.\n" +\
+            "Is the PIM Mini ready for the {} {} test? (y/n): "
         while status != "y" and status != "n":
-            status = raw_input(
-                "\nIs the PIM Mini ready for the {} {} test? (y/n): "
-                .format(self.__class__.__name__, test_name)
-            )
+            status = raw_input(message.format(
+                test_name, self.__class__.__name__, test_name))
+            status = status.lower()
             status = status.strip()
         if status == "n":
             self.fail("The user indicated that the test is not ready")
@@ -61,6 +62,15 @@ class SerialComms(unittest.TestCase):
         comm.write(TEST_STRING)
         output = str(comm.read_all())
         self.assertEqual(output, TEST_STRING)
+
+        # LED test
+        led_status = None
+        while led_status != "y" and led_status != "n":
+            led_status = raw_input(
+                "\nWas the {} LED on? (y/n): ").format(test_name)
+            led_status = led_status.lower()
+            led_status = led_status.strip()
+        self.assertEqual("y", led_status)
 
 
 class CCPComms(SerialComms):

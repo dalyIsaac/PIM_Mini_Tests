@@ -3,7 +3,7 @@ Settings for user_inputs.py.
 NOTE: the pin is the Linux pin number
 """
 
-from periphery import GPIO
+from periphery import GPIO # pylint: disable=W0403
 
 IN = "in"
 OUT = "out"

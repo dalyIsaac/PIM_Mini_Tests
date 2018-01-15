@@ -49,12 +49,9 @@ class SerialComms(unittest.TestCase):
     def _test(self, comm, test_name):
         """Writes, reads, and ensures that the output is correct for the serial device"""
         status = None
-        message = "While the test is running please check that the {} transmit and receive LEDs" +\
-            " turn on (it's alright if they turn off).\n" +\
-            "Is the PIM Mini ready for the {} {} test? (y/n): "
         while status != "y" and status != "n":
-            status = raw_input(message.format(
-                self.__class__.__name__, self.__class__.__name__, test_name))
+            status = raw_input("Is the PIM Mini ready for the {} {} test? (y/n): ".format(
+                self.__class__.__name__, test_name))
             status = status.strip()
         if status == "n":
             self.fail("The user indicated that the test is not ready")
@@ -62,20 +59,6 @@ class SerialComms(unittest.TestCase):
         comm.write(TEST_STRING)
         output = str(comm.read_all())
         self.assertEqual(output, TEST_STRING)
-
-        # LED tests
-        self.check_led(self.__class__.__name__, "transmit")
-        self.check_led(self.__class__.__name__, "receive")
-
-    
-    def check_led(self, name, function):
-        """Checks that the specified LED turned on, with help from the user"""
-        led_status = None
-        while led_status != "y" and led_status != "n":
-            led_status = raw_input(
-                "\nDid the {} {} LED turn on? (y/n): ").format(name, function)
-            led_status = led_status.strip()
-        self.assertEqual("y", led_status)
 
 
 class CCPComms(SerialComms):

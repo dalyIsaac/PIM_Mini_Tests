@@ -16,7 +16,8 @@ class ConnectedTest(object):
 
     def __init__(self, commands):
         # NOTE: CHECK THIS
-        logging.basicConfig(filename="{}_{}_tcp.log",
+        filename = "{}_tcp.log".format(__class__.__name__)
+        logging.basicConfig(filename=filename,
                             filemode='w', format='%(asctime): ')
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -61,7 +62,6 @@ class ConnectedTest(object):
         data = connection.recv(16)  # 16 is the number of bytes
         log = "Client ack: %s" % data
         logging.info(log)
-        connection.close()
         
         response = None
         user_input = ""
@@ -74,10 +74,8 @@ class ConnectedTest(object):
             elif command[0] == COMMAND:
                 log = "The command '{}' is being sent to the target".format(command[1])
                 logging.info(log)
-                connection, client_address = self.socket.accept()
                 connection.sendall(command[1])
                 response = connection.recv(16)
-                connection.close()
                 log = "Response received: " + response
                 logging.info(log)
             elif command[0] == INPUT:
@@ -86,6 +84,8 @@ class ConnectedTest(object):
                 user_input = raw_input(command[1])
                 log = "User inputted " + user_input
                 logging.info(log)
+        connection.sendall("close")
+        connection.close()
         logging.info("All commands have been dealt with")
 
     

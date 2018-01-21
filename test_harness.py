@@ -3,7 +3,8 @@ Test harness for the PIM Mini.
 In order to choose what tests you want to run, set the appropriate Boolean values in `settings.py`
 """
 
-from settings import STARTUP_TESTS, EEPROM_TESTS, FRAM_TESTS, RTC_TESTS, COMMS_TESTS, LEDS_TESTS, USER_INPUTS_TESTS
+from settings import STARTUP_TESTS, EEPROM_TESTS, FRAM_TESTS, RTC_TESTS, COMMS_TESTS,\
+    LEDS_TESTS, USER_INPUTS_TESTS
 
 
 def main():
@@ -39,6 +40,7 @@ def main():
     print "\n\n\n"
     print " --- END OF TESTS --- "
     print "\n\n\n"
+
 
 if __name__ == "__main__":
     main()

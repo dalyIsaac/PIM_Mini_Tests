@@ -195,8 +195,8 @@ class UserInputsDaemon(Daemon):
             sys.exit(2)
 
 def _main():
-    logging.basicConfig(filename="comms_daemon.log", filemode='w', format='%(asctime): ')
-    daemon = UserInputsDaemon('/tmp/comms_daemon.pid')
+    logging.basicConfig(filename="user_inputs_daemon.log", filemode='w', format='%(asctime): ')
+    daemon = UserInputsDaemon('/tmp/user_inputs_daemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'stop':
             daemon.stop()

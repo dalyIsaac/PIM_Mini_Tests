@@ -1,6 +1,6 @@
 """
 Daemon which allows the automation of the execution of tests.
-Calls comms_target.py
+Calls user_inputs_target.py
 """
 
 import sys
@@ -10,7 +10,7 @@ import logging
 import time
 import atexit
 from signal import SIGTERM
-import comms_target
+import user_inputs_target
 
 
 class Daemon(object):
@@ -146,7 +146,7 @@ class Daemon(object):
         pass
 
 
-class CommsDaemon(Daemon):
+class UserInputsDaemon(Daemon):
     """
     Automates the execution of the communications tests
     """
@@ -165,19 +165,19 @@ class CommsDaemon(Daemon):
             log = "Received " + command
             logging.info(log)
 
-            comms = None
+            user_input = None
             result = None
-            if command[0] == str(comms_target.CCPComms.__name__):
-                comms = comms_target.CCPComms()
-            elif command[0] == str(comms_target.IEDComms.__name__):
-                comms = comms_target.IEDComms()
-                
-            if command[1] == "TTL":
-                result = comms.test_ttl()
-            elif command[1] == "RS-232":
-                result = comms.test_rs232()
-            elif command[1] == "RS-485":
-                result = comms.test_rs485()
+            if command[0] == str(user_inputs_target.UserInputOne.__name__):
+                user_input = user_inputs_target.UserInputOne()
+            elif command[0] == str(user_inputs_target.UserInputTwo.__name__):
+                user_input = user_inputs_target.UserInputTwo()
+            elif command[0] == str(user_inputs_target.UserInputThree.__name__):
+                user_input = user_inputs_target.UserInputThree()
+                          
+            if command[1] == "high":
+                result = user_input.test_high()
+            elif command[1] == "low":
+                result = user_input.test_low()
 
             self.sock.sendall(result)
         
@@ -186,7 +186,7 @@ class CommsDaemon(Daemon):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect(self.server_address)
-            message = "comms_daemon ack"
+            message = "user_inputs_daemon ack"
             self.sock.sendall(message)
             self.test_runner()
         except ValueError as ex:
@@ -196,7 +196,7 @@ class CommsDaemon(Daemon):
 
 def _main():
     logging.basicConfig(filename="comms_daemon.log", filemode='w', format='%(asctime): ')
-    daemon = CommsDaemon('/tmp/comms_daemon.pid')
+    daemon = UserInputsDaemon('/tmp/comms_daemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'stop':
             daemon.stop()

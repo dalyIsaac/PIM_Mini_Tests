@@ -4,7 +4,10 @@ import unittest
 from connected_test import ConnectedTest
 
 class CommsTests(ConnectedTest):
-    """Runs the tests for the comms on the target"""
+    """
+    : THIS IS A BASE CLASS. DO NOT IMPLEMENT THIS CLASS. : 
+    Runs the tests for the comms on the target
+    """
 
     def __init__(self, methodName="runTest"):
         ConnectedTest.__init__(methodName)

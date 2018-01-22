@@ -9,6 +9,7 @@ import logging
 import time
 import atexit
 from signal import SIGTERM
+import comms_target
 
 
 class Daemon(object):
@@ -148,7 +149,7 @@ class CommsDaemon(Daemon):
     Automates the execution of the communications tests
     """
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
-        self.filename, self.test, hostname, tcp_port = sys.argv[1:4] # pylint: disable=E0632
+        self.filename, hostname, tcp_port = sys.argv[1:3] # pylint: disable=E0632
         self.server_address = (hostname, tcp_port)
         self.sock = None
         Daemon.__init__(self, pidfile, stdin, stdout, stderr)
@@ -161,10 +162,20 @@ class CommsDaemon(Daemon):
             log = "Received " + command
             logging.info(log)
 
-            # Execution occurs below here
-            if command == "":
-                output = function()
-                self.sock.sendall(output)
+            comms = None
+            result = None
+            if command[0] == str(comms_target.CCPComms.__name__):
+                comms = comms_target.CCPComms()
+            elif command[1] == str(comms_target.IEDComms.__name__):
+                comms = comms_target.IEDComms()
+            if command[1] == "TTL":
+                result = comms.test_ttl()
+            if command[1] == "RS-232":
+                result = comms.test_rs232()
+            if command[1] == "RS-485":
+                result = comms.test_rs485()
+
+            self.sock.sendall(result)
         
     def run(self):
         # This should start listening for TCP
@@ -173,6 +184,7 @@ class CommsDaemon(Daemon):
             self.sock.connect(self.server_address)
             message = "comms_daemon ack"
             self.sock.sendall(message)
+            self.test_runner()
         except ValueError as ex:
             log = "Invalid number of arguments:" + ex
             logging.error(log)

@@ -15,7 +15,7 @@ class ConnectedTest(unittest.TestCase):
     If a command is ``(INPUT, 'string')``, user input will be prompted with ``string``.
     """
 
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName):
         # NOTE: CHECK THIS
         filename = "{}_tcp.log".format(__class__.__name__)
         logging.basicConfig(filename=filename,

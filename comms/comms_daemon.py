@@ -1,5 +1,6 @@
 """
 Daemon which allows the automation of the execution of tests.
+Calls comms_target.py
 """
 
 import sys

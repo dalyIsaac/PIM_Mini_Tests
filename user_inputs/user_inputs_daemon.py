@@ -33,7 +33,7 @@ class Daemon(object):
         http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16
         """
         try:
-            pid = os.fork() # pylint: disable=E1101
+            pid = os.fork()  # pylint: disable=E1101
             if pid > 0:
                 # exit first parent
                 sys.exit(0)
@@ -44,17 +44,18 @@ class Daemon(object):
 
         # decouple from parent environment
         os.chdir("/")
-        os.setsid() # pylint: disable=E1101
+        os.setsid()  # pylint: disable=E1101
         os.umask(0)
 
         # do second fork
         try:
-            pid = os.fork() # pylint: disable=E1101
+            pid = os.fork()  # pylint: disable=E1101
             if pid > 0:
                 # exit from second parent
                 sys.exit(0)
         except OSError, exception:
-            sys.stderr.write("fork #2 failed: %d (%s)\n" % (exception.errno, exception.strerror))
+            sys.stderr.write("fork #2 failed: %d (%s)\n" %
+                             (exception.errno, exception.strerror))
             sys.exit(1)
 
         # redirect standard file descriptors
@@ -152,7 +153,7 @@ class UserInputsDaemon(Daemon):
     """
 
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
-        self.filename, hostname, tcp_port = sys.argv[1:3] # pylint: disable=E0632
+        self.filename, hostname, tcp_port = sys.argv[1:3]  # pylint: disable=E0632
         self.server_address = (hostname, tcp_port)
         self.sock = None
         Daemon.__init__(self, pidfile, stdin, stdout, stderr)
@@ -173,14 +174,14 @@ class UserInputsDaemon(Daemon):
                 user_input = user_inputs_target.UserInputTwo()
             elif command[0] == str(user_inputs_target.UserInputThree.__name__):
                 user_input = user_inputs_target.UserInputThree()
-                          
+
             if command[1] == "high":
                 result = user_input.test_high()
             elif command[1] == "low":
                 result = user_input.test_low()
 
             self.sock.sendall(result)
-        
+
     def run(self):
         """Starts listening over TCP, and starts the test runner"""
         try:
@@ -194,8 +195,10 @@ class UserInputsDaemon(Daemon):
             logging.error(log)
             sys.exit(2)
 
+
 def _main():
-    logging.basicConfig(filename="user_inputs_daemon.log", filemode='w', format='%(asctime): ')
+    logging.basicConfig(filename="user_inputs_daemon.log",
+                        filemode='w', format='%(asctime): ')
     daemon = UserInputsDaemon('/tmp/user_inputs_daemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'stop':
@@ -208,6 +211,7 @@ def _main():
     else:
         print "usage: %s start|stop|restart" % sys.argv[0]
         sys.exit(2)
+
 
 if __name__ == "__main__":
     _main()

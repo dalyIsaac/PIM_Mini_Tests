@@ -143,7 +143,7 @@ class Daemon(object):
         It will be called after the process has been
         daemonized by start() or restart().
         """
-
+        pass
 
 class LEDsDaemon(Daemon):
     """
@@ -188,7 +188,7 @@ class LEDsDaemon(Daemon):
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect(self.server_address)
-            message = "comms_daemon ack"
+            message = "leds_daemon ack"
             self.sock.sendall(message)
             self.test_runner()
         except ValueError as ex:

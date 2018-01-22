@@ -1,6 +1,6 @@
 """
 Daemon which allows the automation of the execution of tests.
-Calls comms_target.py
+Calls leds_target.py
 """
 
 import sys
@@ -10,7 +10,7 @@ import logging
 import time
 import atexit
 from signal import SIGTERM
-import comms_target
+import leds_target
 
 
 class Daemon(object):
@@ -145,9 +145,9 @@ class Daemon(object):
         """
 
 
-class CommsDaemon(Daemon):
+class LEDsDaemon(Daemon):
     """
-    Automates the execution of the communications tests
+    Automates the execution of the LEDs tests
     """
 
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
@@ -155,7 +155,7 @@ class CommsDaemon(Daemon):
         self.server_address = (hostname, tcp_port)
         self.sock = None
         Daemon.__init__(self, pidfile, stdin, stdout, stderr)
-
+    
     def test_runner(self):
         """Listens over TCP, executes tests, and returns the results to the controller"""
         command = None
@@ -164,21 +164,25 @@ class CommsDaemon(Daemon):
             log = "Received " + command
             logging.info(log)
 
-            comms = None
             result = None
-            if command[0] == str(comms_target.CCPComms.__name__):
-                comms = comms_target.CCPComms()
-            elif command[1] == str(comms_target.IEDComms.__name__):
-                comms = comms_target.IEDComms()
-            if command[1] == "TTL":
-                result = comms.test_ttl()
-            elif command[1] == "RS-232":
-                result = comms.test_rs232()
-            elif command[1] == "RS-485":
-                result = comms.test_rs485()
+            if command == "CCP OK":
+                result = leds_target.CCP_OK
+            elif command == "IED OK":
+                result = leds_target.IED_OK
+            elif command == "Fault":
+                result = leds_target.FAULT
+            elif command == "CCP Data Tx (transmit)":
+                result = leds_target.CCP_DATA_TX
+            elif command == "CCP Data Rx (receive)":
+                result = leds_target.CCP_DATA_RX
+            elif command == "IED Data Tx (transmit)":
+                result = leds_target.IED_DATA_TX
+            elif command == "IED Data Rx (receive)":
+                result = leds_target.IED_DATA_RX
 
             self.sock.sendall(result)
-        
+
+    
     def run(self):
         """Starts listening over TCP, and starts the test runner"""
         try:
@@ -193,15 +197,15 @@ class CommsDaemon(Daemon):
             sys.exit(2)
 
 def _main():
-    logging.basicConfig(filename="comms_daemon.log", filemode='w', format='%(asctime): ')
-    daemon = CommsDaemon('/tmp/comms_daemon.pid')
+    logging.basicConfig(filename="leds_daemon.log", filemode='w', format='%(asctime): ')
+    daemon = LEDsDaemon('/tmp/leds_daemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'stop':
             daemon.stop()
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
-            daemon.start_daemon()
+            daemon.start()
         sys.exit(0)
     else:
         print "usage: %s start|stop|restart" % sys.argv[0]

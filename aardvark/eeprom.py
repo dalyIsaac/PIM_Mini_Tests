@@ -7,7 +7,7 @@ If the PC is running Linux, it is assumed that it is running a 64-bit version.
 
 import unittest
 from array import array
-from aardvark_py import aa_open, aa_configure, aa_i2c_pullup,\
+from aardvark_py.aai2c_eeprom import aa_open, aa_configure, aa_i2c_pullup,\
     aa_target_power, aa_i2c_bitrate, aa_i2c_bus_timeout, aa_i2c_write,\
     aa_i2c_read, aa_close, AA_CONFIG_GPIO_I2C, AA_I2C_PULLUP_BOTH,\
     AA_TARGET_POWER_BOTH, AA_I2C_NO_FLAGS, AA_UNABLE_TO_CLOSE

@@ -4,8 +4,8 @@ If the PC is running Linux, it is assumed that it is running a 64-bit version.
 """
 
 import unittest
-from aardvark_py import aa_configure, aa_target_power, aa_spi_configure, aa_spi_bitrate,\
-    aa_open, aa_close, aa_spi_write, aa_sleep_ms,\
+from aardvark_py.aaspi_slave import aa_configure, aa_target_power, aa_spi_configure,\
+    aa_spi_bitrate, aa_open, aa_close, aa_spi_write, aa_sleep_ms,\
     AA_CONFIG_SPI_I2C, AA_TARGET_POWER_NONE, AA_SPI_BITORDER_MSB, AA_OK,\
     AA_UNABLE_TO_CLOSE, array, array_u08
 from aardvark_connection import AardvarkConnection
@@ -40,7 +40,7 @@ AardvarkConnection.register(FRAMConnection)
 
 
 class FRAMActions(unittest.TestCase):
-    """Tests that the EEPROM can be written to via I2C"""
+    """Tests that the FRAM can be written to via I2C"""
 
     def __init__(self, methodName='runTest'):
         """Initializer for attributes"""

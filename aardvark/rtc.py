@@ -9,8 +9,8 @@ import unittest
 import time
 from datetime import datetime, timedelta
 from collections import namedtuple
-from aardvark_py import aa_open, aa_configure, aa_i2c_pullup, aa_target_power, aa_i2c_bitrate,\
-    aa_i2c_bus_timeout, aa_close, aa_i2c_write, aa_i2c_read, AA_CONFIG_GPIO_I2C,\
+from aardvark_py.aai2c_slave import aa_open, aa_configure, aa_i2c_pullup, aa_target_power,\
+    aa_i2c_bitrate, aa_i2c_bus_timeout, aa_close, aa_i2c_write, aa_i2c_read, AA_CONFIG_GPIO_I2C,\
     AA_I2C_PULLUP_BOTH, AA_TARGET_POWER_BOTH, AA_UNABLE_TO_CLOSE, AA_I2C_NO_FLAGS, array
 from aardvark_settings import RTC_PORT_NUMBER as PORT_NUMBER, RTC_SLAVE_ADDRESS as SLAVE_ADDRESS,\
     SECONDS_ADDRESS, MINUTE_ADDRESS, HOUR_ADDRESS, DAY_OF_WEEK_ADDRESS, DAY_OF_MONTH_ADDRESS,\

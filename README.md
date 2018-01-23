@@ -13,6 +13,10 @@ It is assumed that the following directories are already on the target device:
 | `/comms`         | `/comms`                |
 | `/user_inputs`   | `/user_inputs`          |
 
+The `*_controller.py` files start a deamon on the target via SSH, which listens to commands sent
+in order to run tests. After 30 minutes of inactivity the daemons will stop. The daemons will also stop
+after the tests have completed executing.
+
 ## Licenses
 
 ### python-periphery

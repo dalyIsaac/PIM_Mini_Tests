@@ -7,6 +7,7 @@ import sys
 import os
 import socket
 import logging
+from datetime import datetime, timedelta
 import time
 import atexit
 from signal import SIGTERM
@@ -159,7 +160,8 @@ class LEDsDaemon(Daemon):
     def test_runner(self):
         """Listens over TCP, executes tests, and returns the results to the controller"""
         command = None
-        while command != "close":
+        time_to_stop = datetime.now() + timedelta(minutes=30)
+        while command != "close" and time_to_stop > datetime.now():
             command = self.sock.recv(16)
             log = "Received " + command
             logging.info(log)
@@ -181,6 +183,7 @@ class LEDsDaemon(Daemon):
                 result = leds_target.IED_DATA_RX
 
             self.sock.sendall(result)
+        self.stop()
 
     
     def run(self):

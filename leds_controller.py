@@ -1,13 +1,17 @@
-"""Tests that the LEDs are working, by writing to the appropriate GPIO pins"""
+"""Contains `LEDsTests`, which runs the tests for the LEDs on the target"""
 
 import unittest
-from leds_settings import CCP_OK, IED_OK, FAULT, CCP_DATA_TX, CCP_DATA_RX, IED_DATA_TX, IED_DATA_RX
+from connected_test import ConnectedTest
 
 
-class LEDHardware(unittest.TestCase):
-    """Tests that the LEDs are working, by writing to the appropriate GPIO pins"""
+class LEDsTests(ConnectedTest):
+    """Runs the tests for the LEDs on the target"""
 
-    def test_power(self):
+    def __init__(self, methodName="runTest"):
+        ConnectedTest.__init__(methodName)
+        self.start_daemon("/leds/leds_target.py") # NOTE: check this 
+
+    def test_01_power(self):
         """Tests that when the power is turned on, the power LED is on"""
         actual_power = ""
         while actual_power != "y" and actual_power != "n":
@@ -19,7 +23,7 @@ class LEDHardware(unittest.TestCase):
             led_status = raw_input("\nIs the power LED on? (y/n): ")
         self.assertEqual(led_status, "y")
 
-    def test_heartbeat(self):
+    def test_02_heartbeat(self):
         """Tests that when the device is powered on, the heartbeat LED is flashing"""
         device_on = ""
         while device_on != "y" and device_on != "n":
@@ -31,50 +35,53 @@ class LEDHardware(unittest.TestCase):
             led_status = raw_input("\nIs the heartbeat LED flashing? (y/n): ")
         self.assertEqual(led_status, "y")
 
-    def test_ccp_ok(self):
+    def test_03_ccp_ok(self):
         """Tests that the CCP OK LED can be turned on"""
-        self._test(CCP_OK, "CCP OK")
+        self._test("CCP OK")
 
-    def test_ied_ok(self):
+    def test_04_ied_ok(self):
         """Tests that the IED OK LED can be turned on"""
-        self._test(IED_OK, "IED OK")
+        self._test("IED OK")
 
-    def test_fault(self):
+    def test_05_fault(self):
         """Tests that the Fault LED can be turned on"""
-        self._test(FAULT, "Fault")
+        self._test("Fault")
 
-    def test_ccp_data_tx(self):
+    def test_06_ccp_data_tx(self):
         """Tests that the CCP Data Tx (transmit) LED can be turned on"""
-        self._test(CCP_DATA_TX, "CCP Data Tx (transmit)")
+        self._test("CCP Data Tx (transmit)")
 
-    def test_ccp_data_rx(self):
+    def test_07_ccp_data_rx(self):
         """Tests that the CCP Data Rx (receive) LED can be turned on"""
-        self._test(CCP_DATA_RX, "CCP Data Rx (receive)")
+        self._test("CCP Data Rx (receive)")
 
-    def test_ied_data_tx(self):
+    def test_08_ied_data_tx(self):
         """Tests that the IED Data Tx (transmit) LED can be turned on"""
-        self._test(IED_DATA_TX, "IED Data Tx (transmit)")
+        self._test("IED Data Tx (transmit)")
 
-    def test_ied_data_rx(self):
+    def test_09_ied_data_rx(self):
         """Tests that the IED Data Rx (receive) LED can be turned on"""
-        self._test(IED_DATA_RX, "IED Data Rx (receive)")
+        self._test("IED Data Rx (receive)")
 
-    def _test(self, pin, name):
-        """Tests an LED"""
-        pin.write(True)
-        self.assertEqual(pin.read(), False)
-        led_status = ""
-        while led_status != "y" and led_status != "n":
-            led_status = raw_input(
-                "\nIs the {} LED turned on? (y/n): ").format(name)
-        self.assertEqual(led_status, "y")
-        pin.write(False)
+    def _test(self, test_name):
+        result = self.send_command(test_name)
+        # result is an indication whether the GPIO assignment was successful
+        if not result:
+            self.fail("The value for this LED could not be assigned.")
+        self.assertEqual(result, "True")
+        user_input = raw_input(
+            "Is the {} LED turned on?: (y/n): ".format(test_name))
+        self.assertEqual(user_input, True)
+    
+    def test_10_kill_daemon(self):
+        """KILLING DAEMON: NOT A TEST"""
+        self._kill()
 
 
 def construct_test_suite():
     """Constructs the test suite"""
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(LEDHardware))
+    suite.addTest(unittest.makeSuite(LEDsTests))
     return suite
 
 
@@ -85,7 +92,7 @@ def run_test_suite():
 
 
 def main():
-    """Runs the test suite with the various GPIO pins"""
+    """Runs the test suite for all of the LEDs"""
     run_test_suite()
 
 

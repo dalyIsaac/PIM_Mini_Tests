@@ -2,6 +2,17 @@
 
 Python version: Python 2.7
 
+## Test Harness
+
+Boolean values stored inside `settings.py` are used to indicate whether a test will be run.
+It is assumed that the following directories are already on the target device:
+
+| Source directory | Target device directory |
+| ---------------- | ----------------------- |
+| `/leds`          | `/leds`                 |
+| `/comms`         | `/comms`                |
+| `/user_inputs`   | `/user_inputs`          |
+
 ## Licenses
 
 ### python-periphery
